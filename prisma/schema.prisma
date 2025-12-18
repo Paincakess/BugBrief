@@ -1,0 +1,29 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Report {
+  id          String   @id @default(uuid())
+  title       String
+  summary     String?  // Brief summary or description provided by user
+  content     String   // The full generated markdown report
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Metadata for re-generation or context
+  mode        String   // "explainer" | "report_poc" | "report_def"
+  pocs        Poc[]
+}
+
+model Poc {
+  id          String   @id @default(uuid())
+  reportId    String
+  report      Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  content     String   // The raw input (masked if needed before saving)
+  type        String   // "REQUEST", "LOG", "CLI" (Optional)
+}
