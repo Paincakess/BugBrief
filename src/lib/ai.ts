@@ -107,8 +107,15 @@ export async function generateReport(
     ## Recommendation
     [Bulleted list. Use "Consider..." phrasing. Do NOT prescribe exact code fixes. Focus on defensive principles.]
     
+    ## Steps of Reproduction
+    1. [First step - clear, actionable instruction]
+    2. [Second step]
+    3. [Continue as needed]
+    [Numbered list from tester's perspective. Clear but not exploitative. Include expected vs actual results.
+    IMPORTANT: If specific steps are not provided in the input, research the most common/optimal exploitation method for this vulnerability type and correlate with the evidence provided. Base the steps on industry-standard testing methodologies.]
+    
     ## References
-    [List of real, reputable links (OWASP, PortSwigger, CWE, NIST). No Medium/Blogs. Include the CWE link.]
+    [List of real, reputable links (OWASP, PortSwigger, CWE, NIST). No Medium/Blogs. Include the CWE link. Each reference on a new line.]
     
     Non-functional constraints:
     - Tone: Consultant-grade, professional, objective.
