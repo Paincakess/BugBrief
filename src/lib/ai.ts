@@ -105,14 +105,16 @@ export async function generateReport(
     - **Parameter**: [Vulnerable parameter if applicable]
     
     ## Recommendation
-    [Bulleted list. Use "Consider..." phrasing. Do NOT prescribe exact code fixes. Focus on defensive principles.]
+    - Consider [first defensive principle with full explanation].
+    - Consider [second defensive principle with full explanation].
+    - Consider [third defensive principle if applicable].
+    [MUST be a bulleted list. Each bullet starts with "Consider...". Focus on defensive principles, not exact code fixes.]
     
     ## Steps of Reproduction
-    1. [First step - clear, actionable instruction]
-    2. [Second step]
-    3. [Continue as needed]
-    [Numbered list from tester's perspective. Clear but not exploitative. Include expected vs actual results.
-    IMPORTANT: If specific steps are not provided in the input, research the most common/optimal exploitation method for this vulnerability type and correlate with the evidence provided. Base the steps on industry-standard testing methodologies.]
+    - [First step as a complete sentence describing the action]
+    - [Second step as a complete sentence]
+    - [Continue with more steps as needed]
+    [MUST be a bulleted list. Each bullet is a complete sentence describing one step. Write from tester's perspective. If specific steps are not provided in the input, research the most common/optimal exploitation method for this vulnerability type and correlate with the evidence provided.]
     
     ## References
     [List of real, reputable links (OWASP, PortSwigger, CWE, NIST). No Medium/Blogs. Include the CWE link. Each reference on a new line.]

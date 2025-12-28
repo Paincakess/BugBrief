@@ -204,27 +204,31 @@ body {
 .markdown-content ul {
   display: block;
   list-style-type: disc;
+  list-style-position: outside;
   margin-bottom: 1.5em;
   margin-left: 1.5em;
-  padding-left: 0;
+  padding-left: 1em;
 }
 
 .markdown-content ol {
   display: block;
   list-style-type: decimal;
+  list-style-position: outside;
   margin-bottom: 1.5em;
   margin-left: 1.5em;
-  padding-left: 0;
+  padding-left: 1em;
 }
 
 .markdown-content li {
   display: list-item;
-  margin-bottom: 0.5em;
+  margin-bottom: 0.75em;
   line-height: 1.6;
+  padding-left: 0.5em;
 }
 
 .markdown-content li::marker {
-  color: var(--primary);
+  color: #3b82f6;
+  font-weight: bold;
 }
 
 .markdown-content pre {
