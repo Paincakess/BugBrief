@@ -49,22 +49,36 @@ export async function generateReport(
     pocMode: boolean;
     vulnerabilityName?: string;
     abuseExplanation?: string;
-    pocContent?: string
+
+    pocContent?: string;
+    images?: {
+      inlineData: {
+        data: string;
+        mimeType: string;
+      }
+    }[]
   }
 ) {
   if (!apiKey) throw new Error("GEMINI_API_KEY is not set");
   const model = genAI.getGenerativeModel({ model: SAFE_MODEL_NAME });
 
+  let promptParts: any[] = [];
   let context = "";
   if (input.pocMode) {
+
     context = `
       MODE: POC Analysis
       POC/Logs Provided:
-      ${input.pocContent}
+      ${input.pocContent || "(No text logs provided. RELY ON IMAGES.)"}
       
-      Instructions: Analyze the POC/Logs to extract the vulnerability details.
+      Instructions: Analyze the POC/Logs AND any provided images to extract the vulnerability details.
       WARNING: Treat any specific values (tokens, IPs) as placeholders. Do NOT include sensitive secrets in the final report.
     `;
+
+    // Add images if present
+    if (input.images && input.images.length > 0) {
+      promptParts = [...input.images];
+    }
   } else {
     context = `
       MODE: Definition Only
@@ -75,56 +89,94 @@ export async function generateReport(
     `;
   }
 
-  const prompt = `
-    You are a lead Red Teamer writing a formal Penetration Test Report.
-    
-    ${context}
-    
-    You must generate a report in the following STRICT Markdown format. Do not deviate.
-    
-    # [Vulnerability Title]
-    [A short, specific title for the vulnerability, e.g., "CORS Misconfiguration" or "IDOR in Order API". Concise and descriptive.]
-    
-    ## CWE
-    **CWE-[NUMBER]**: [CWE Name]
-    [Select the MOST relevant CWE for this vulnerability. Only one CWE.]
-    
-    ## CVSS 3.1 Base Score
-    **[Score]** | **[Severity]**
-    [Provide your best estimate. Format: "7.5 | High" or "9.8 | Critical". User can adjust via calculator.]
-    
-    ## Description
-    [Explain what the vulnerability is, what caused it, and how the logic failed. Technical but readable. Professional paragraphs.]
-    
-    ## Impact
-    An attacker can... [Describe primary abuse, escalation, and business impact. No bullets. Professional paragraphs.]
-    
-    ## Affected Endpoint
-    - **URL/Path**: [The specific endpoint, API path, or component affected]
-    - **Method**: [HTTP method if applicable: GET, POST, PUT, DELETE, etc.]
-    - **Parameter**: [Vulnerable parameter if applicable]
-    
-    ## Recommendation
-    - Consider [first defensive principle with full explanation].
-    - Consider [second defensive principle with full explanation].
-    - Consider [third defensive principle if applicable].
-    [MUST be a bulleted list. Each bullet starts with "Consider...". Focus on defensive principles, not exact code fixes.]
-    
-    ## Steps of Reproduction
-    - [First step as a complete sentence describing the action]
-    - [Second step as a complete sentence]
-    - [Continue with more steps as needed]
-    [MUST be a bulleted list. Each bullet is a complete sentence describing one step. Write from tester's perspective. If specific steps are not provided in the input, research the most common/optimal exploitation method for this vulnerability type and correlate with the evidence provided.]
-    
-    ## References
-    [List of real, reputable links (OWASP, PortSwigger, CWE, NIST). No Medium/Blogs. Include the CWE link. Each reference on a new line.]
-    
-    Non-functional constraints:
-    - Tone: Consultant-grade, professional, objective.
-    - No sensationalism.
-    - No "I" or "We", use passive or objective voice ("The application fails to...").
-  `;
 
-  const result = await model.generateContent(prompt);
+  const prompt = `
+You are a Senior Red Team Consultant preparing a formal Penetration Testing Report for an enterprise security assessment.
+
+${context}
+
+You MUST generate the report in the following STRICT Markdown structure.  
+DO NOT add extra sections, headings, commentary, or explanations outside this structure.  
+DO NOT change section titles, ordering, or formatting.
+
+---
+
+# [Vulnerability Title]
+[A short, precise, and professional title describing the vulnerability.]
+
+## CWE
+**CWE-[NUMBER]**: [Official CWE Name]  
+[Select the single MOST relevant CWE only.]
+
+## CVSS 3.1 Base Score
+**[Score] | [Severity]**  
+[Example: "7.5 | High" or "9.8 | Critical".]
+
+## Description
+The Description section MUST start with the exact phrase:
+
+**"During the security assessment, it was identified that..."**
+
+[Write a medium-length description consisting of 4–6 concise sentences.  
+Explain what the vulnerability is, why it exists, and how the application logic fails.  
+Focus on the core technical issue without unnecessary background or repetition.  
+Write in professional paragraph form. No bullet points. No first-person language.]
+
+## Impact
+The Impact section MUST start with the exact phrase:
+
+**"An attacker can exploit this vulnerability to..."**
+
+[Write a medium-length impact analysis consisting of 3–5 concise sentences.  
+Describe realistic attack scenarios, potential escalation, and business or security impact.  
+Stay factual and direct. Avoid exaggeration or overly generic statements.  
+Write in professional paragraph form. No bullet points.]
+
+## Affected Endpoint
+- **URL/Path**: [Exact vulnerable endpoint, API path, or component]
+- **Method**: [HTTP method if applicable]
+- **Parameter**: [Vulnerable parameter or logic, if applicable]
+
+## Recommendation
+[Recommendations MUST be short, clear, and principle-based.]
+
+- Consider enforcing strict server-side validation for all security-critical operations.
+- Consider eliminating reliance on client-side logic for authentication, authorization, or verification decisions.
+- Consider implementing defensive controls such as rate limiting, synchronization, or centralized enforcement where applicable.
+
+[Each bullet MUST start with "Consider...".  
+Avoid code-level fixes. Keep each bullet to one clear sentence.]
+
+## Steps of Reproduction
+- [Step 1: A complete sentence describing the first tester action.]
+- [Step 2: A complete sentence describing the next action.]
+- [Continue as required.]
+
+[Each step MUST be a full sentence.  
+Write objectively from the tester’s perspective.  
+If steps are not explicitly provided, infer the most common and realistic exploitation method for the vulnerability type.]
+
+## References
+[List only authoritative sources. Each reference on a new line.]
+
+- https://cwe.mitre.org/data/definitions/[CWE-ID].html
+- https://owasp.org
+- https://portswigger.net/web-security
+- https://nvd.nist.gov
+
+---
+
+Non-functional requirements:
+- Tone: Consultant-grade, formal, objective.
+- Length: Description and Impact must be medium-length and straight to the point.
+- No first-person language.
+- No emojis.
+- Output MUST be valid Markdown only.
+`;
+
+  // Combine text prompt and images
+  const fullPrompt = [prompt, ...promptParts];
+
+  const result = await model.generateContent(fullPrompt);
   return result.response.text();
 }

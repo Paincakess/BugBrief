@@ -7,6 +7,10 @@ import { ArrowLeft, Save, Sparkles, Edit3, Calculator } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+
+const MySwal = withReactContent(Swal);
 
 // Dynamic imports to avoid SSR issues
 const WysiwygEditor = dynamic(() => import('@/components/WysiwygEditor'), {
@@ -28,6 +32,18 @@ export default function ReportEditor({ initialReport }: { initialReport: any }) 
         await updateReport(initialReport.id, content);
         setIsSaving(false);
         setIsEditing(false);
+
+        // Show success toast
+        MySwal.fire({
+            title: 'Saved!',
+            text: 'Report changes saved successfully.',
+            icon: 'success',
+            timer: 1500,
+            showConfirmButton: false,
+            background: '#1a1a1a',
+            color: '#fff'
+        });
+
         router.refresh();
     };
 

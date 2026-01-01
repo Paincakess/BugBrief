@@ -26,4 +26,13 @@ model Poc {
   report      Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
   content     String   // The raw input (masked if needed before saving)
   type        String   // "REQUEST", "LOG", "CLI" (Optional)
+  images      PocImage[]
+}
+
+model PocImage {
+  id          String   @id @default(uuid())
+  pocId       String
+  poc         Poc      @relation(fields: [pocId], references: [id], onDelete: Cascade)
+  base64      String   // Base64 encoded image string
+  mimeType    String   // e.g. "image/png"
 }

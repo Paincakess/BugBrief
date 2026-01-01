@@ -4,6 +4,10 @@ import { getReports, deleteReport } from './actions';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { FileText, Trash2, Calendar, ArrowRight, ShieldAlert } from 'lucide-react';
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+
+const MySwal = withReactContent(Swal);
 
 type Report = {
     id: string;
@@ -33,9 +37,32 @@ export default function HistoryPage() {
     const handleDelete = async (id: string, e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        if (confirm("Are you sure you want to delete this report?")) {
+
+        const result = await MySwal.fire({
+            title: 'Delete Report?',
+            text: "This action cannot be undone.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!',
+            background: '#1a1a1a',
+            color: '#fff'
+        });
+
+        if (result.isConfirmed) {
             await deleteReport(id);
             setReports(reports.filter(r => r.id !== id));
+
+            MySwal.fire({
+                title: 'Deleted!',
+                text: 'Report has been deleted.',
+                icon: 'success',
+                timer: 1500,
+                showConfirmButton: false,
+                background: '#1a1a1a',
+                color: '#fff'
+            });
         }
     };
 

@@ -10,15 +10,46 @@ export async function submitReport(prevState: any, formData: FormData): Promise<
     const vulName = formData.get('vulName') as string;
     const abuse = formData.get('abuse') as string;
 
+
     try {
         let result = "";
 
+        const images: { inlineData: { data: string; mimeType: string } }[] = [];
+        const dbImages: { base64: string; mimeType: string }[] = [];
+
+
         if (mode === 'poc') {
-            if (!pocContent) return { error: "Please paste the POC or logs." };
+            // Handle Images first to check if we have any
+            const files = formData.getAll('pocImages') as File[];
+            for (const file of files) {
+                if (file.size > 0 && file.type.startsWith('image/')) {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const buffer = Buffer.from(arrayBuffer);
+                    const base64 = buffer.toString('base64');
+
+                    images.push({
+                        inlineData: {
+                            data: base64,
+                            mimeType: file.type
+                        }
+                    });
+
+                    dbImages.push({
+                        base64,
+                        mimeType: file.type
+                    });
+                }
+            }
+
+            if (!pocContent && images.length === 0) {
+                return { error: "Please paste POC logs or upload an image." };
+            }
+
             const safeContent = sanitizeInput(pocContent);
             result = await generateReport({
                 pocMode: true,
-                pocContent: safeContent
+                pocContent: safeContent,
+                images // Pass images to AI
             });
 
             // Persist to DB
@@ -35,13 +66,12 @@ export async function submitReport(prevState: any, formData: FormData): Promise<
             });
         }
 
-        // Optional: Save to DB (async, fire and forget or await)
+
         // Extract title (Simple heuristic: First line if header, or fallback)
         const titleMatch = result.match(/^#\s+(.*?)$/m);
         const title = mode === 'def' ? vulName : (titleMatch ? titleMatch[1] : "POC Analysis Report");
 
         // Extract Summary (First paragraph after Description header, or just first 200 chars)
-        // Heuristic: Find "Description" header, take next paragraph.
         let summary = "";
         const descMatch = result.match(/Description\s*\n+([^\n]+)/i);
         if (descMatch && descMatch[1]) {
@@ -50,26 +80,63 @@ export async function submitReport(prevState: any, formData: FormData): Promise<
             summary = result.substring(0, 200).replace(/[#*]/g, '').trim();
         }
 
-        await db.report.create({
-            data: {
+        // Return everything needed to save state on client, but DO NOT save to DB yet.
+        return {
+            result,
+            metadata: {
                 title,
                 summary,
-                content: result,
-                mode: mode === 'poc' ? 'report_poc' : 'report_def',
-                pocs: mode === 'poc' ? {
+                mode,
+                pocContent: mode === 'poc' ? sanitizeInput(pocContent) : undefined,
+                images: mode === 'poc' ? dbImages : undefined, // pass back the base64 images so we can save them later
+                vulName: mode === 'def' ? vulName : undefined,
+                abuse: mode === 'def' ? abuse : undefined
+            }
+        };
+
+
+    } catch (e: any) {
+        console.error(e);
+        return { error: 'Report generation failed: ' + (e.message || e) };
+    }
+}
+
+
+export async function saveReport(formData: FormData) {
+    try {
+        const content = formData.get('content') as string;
+        const metadataString = formData.get('metadata') as string;
+
+        if (!content || !metadataString) {
+            throw new Error("Missing content or metadata");
+        }
+
+        const metadata = JSON.parse(metadataString);
+
+        await db.report.create({
+            data: {
+                title: metadata.title || "Untitled Report",
+                summary: metadata.summary || "",
+                content: content,
+                mode: metadata.mode === 'poc' ? 'report_poc' : 'report_def',
+                pocs: metadata.mode === 'poc' ? {
                     create: {
-                        // "POCs stored encrypted or masked"
-                        content: sanitizeInput(pocContent),
-                        type: 'RAW'
+                        content: metadata.pocContent || "",
+                        type: 'RAW',
+                        images: {
+                            // Correctly map the images array to the nested create syntax if they exist
+                            create: (metadata.images || []).map((img: any) => ({
+                                base64: img.base64,
+                                mimeType: img.mimeType
+                            }))
+                        }
                     }
                 } : undefined
             }
         });
-
-        return { result };
-
+        return { success: true };
     } catch (e: any) {
         console.error(e);
-        return { error: 'Report generation failed. Check connection or API Key.' };
+        return { error: 'Failed to save report: ' + e.message };
     }
 }
