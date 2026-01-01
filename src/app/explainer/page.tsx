@@ -5,7 +5,7 @@ import { useFormStatus } from 'react-dom';
 import { submitExplainer } from './actions';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Shield, Key, Code, CheckCircle, Search, Copy, Check, Sparkles } from 'lucide-react';
+import { Shield, Key, Code, CheckCircle, Search, Copy, Check, Sparkles, FileText } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import clsx from 'clsx';
 
@@ -22,7 +22,8 @@ function SubmitButton() {
     const { pending } = useFormStatus();
 
     return (
-        <button type="submit" disabled={pending} className="btn btn-primary w-full h-12 text-base shadow-lg shadow-blue-900/20">
+        <button type="submit" disabled={pending} className="btn btn-primary w-full h-14 text-base shadow-lg shadow-blue-500/20 group">
+            <Sparkles size={18} className={clsx("mr-2 transition-transform", pending && "animate-spin")} />
             {pending ? 'Translating Vulnerability...' : 'Generate Explanation'}
         </button>
     );
@@ -30,7 +31,11 @@ function SubmitButton() {
 
 export default function ExplainerPage() {
     return (
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={
+            <div className="flex items-center justify-center min-h-[400px]">
+                <div className="w-10 h-10 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+            </div>
+        }>
             <ExplainerContent />
         </Suspense>
     );
@@ -79,7 +84,9 @@ function ExplainerContent() {
             {/* Input Section */}
             <div className="space-y-6 overflow-y-auto pr-2">
                 <div>
-                    <h2 className="text-2xl font-bold mb-2">Detailed Input</h2>
+                    <h2 className="text-2xl font-bold mb-2 bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+                        Detailed Input
+                    </h2>
                     <p className="text-[var(--muted)]">Provide the vulnerability context.</p>
                 </div>
 
@@ -129,22 +136,41 @@ function ExplainerContent() {
                             {ROLES.map((role) => (
                                 <div
                                     key={role.id}
-                                    onClick={() => setSelectedRole(role.id as any)}
+                                    onClick={() => setSelectedRole(role.id as typeof selectedRole)}
                                     className={clsx(
-                                        "cursor-pointer p-3 rounded-lg border transition-all flex items-center gap-3",
+                                        "cursor-pointer p-4 rounded-xl border transition-all duration-300 flex items-center gap-4 group",
                                         selectedRole === role.id
-                                            ? "border-[var(--primary)] bg-[var(--primary)] text-white"
-                                            : "border-[var(--card-border)] bg-[var(--card-bg)] hover:border-[var(--muted)]"
+                                            ? "border-blue-500/50 bg-gradient-to-r from-blue-500/15 to-purple-500/10 shadow-lg shadow-blue-500/10"
+                                            : "border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12] hover:bg-white/[0.04]"
                                     )}
                                 >
-                                    <role.icon size={20} className={selectedRole === role.id ? "text-white" : "text-[var(--primary)]"} />
+                                    <div className={clsx(
+                                        "w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300",
+                                        selectedRole === role.id
+                                            ? "bg-blue-500/20 text-blue-400"
+                                            : "bg-white/[0.04] text-[var(--muted)] group-hover:text-white"
+                                    )}>
+                                        <role.icon size={20} />
+                                    </div>
                                     <div className="flex-1">
-                                        <div className="font-semibold text-sm">{role.label}</div>
-                                        <div className={clsx("text-xs", selectedRole === role.id ? "text-blue-100" : "text-[var(--muted)]")}>
+                                        <div className={clsx(
+                                            "font-semibold text-sm transition-colors",
+                                            selectedRole === role.id ? "text-white" : "text-gray-300"
+                                        )}>
+                                            {role.label}
+                                        </div>
+                                        <div className={clsx(
+                                            "text-xs transition-colors",
+                                            selectedRole === role.id ? "text-blue-300/70" : "text-[var(--muted)]"
+                                        )}>
                                             {role.desc}
                                         </div>
                                     </div>
-                                    {selectedRole === role.id && <CheckCircle size={16} />}
+                                    {selectedRole === role.id && (
+                                        <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
+                                            <CheckCircle size={14} className="text-white" />
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>
@@ -153,7 +179,7 @@ function ExplainerContent() {
                     <SubmitButton />
 
                     {state.error && (
-                        <div className="p-4 rounded bg-red-900/20 border border-red-900 text-red-200 text-sm">
+                        <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-sm">
                             {state.error}
                         </div>
                     )}
@@ -161,29 +187,46 @@ function ExplainerContent() {
             </div>
 
             {/* Output Section */}
-            <div className="flex flex-col h-full bg-[#050505] border border-[var(--card-border)] rounded-xl overflow-hidden shadow-2xl relative">
-                <div className="p-4 border-b border-[var(--card-border)] flex items-center justify-between bg-[#0a0a0a]">
-                    <h3 className="font-mono text-sm text-[var(--muted)]">GENERATED_EXPLANATION.md</h3>
+            <div className="flex flex-col h-full glass-card border border-white/[0.06] rounded-2xl overflow-hidden shadow-2xl relative">
+                {/* Header */}
+                <div className="px-5 py-4 border-b border-white/[0.06] flex items-center justify-between bg-white/[0.02]">
+                    <h3 className="font-mono text-sm text-[var(--muted)] flex items-center gap-2">
+                        <FileText size={14} className="text-blue-400" />
+                        <span className={clsx(state.result && "text-white font-medium")}>
+                            GENERATED_EXPLANATION.md
+                        </span>
+                    </h3>
                     {state.result && (
                         <button
                             onClick={copyToClipboard}
-                            className="flex items-center gap-2 text-xs font-medium text-[var(--primary)] hover:text-white transition-colors"
+                            className={clsx(
+                                "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-300",
+                                copied
+                                    ? "bg-green-500/15 text-green-400 border border-green-500/30"
+                                    : "bg-white/[0.04] text-blue-400 hover:bg-white/[0.08] border border-white/[0.06]"
+                            )}
                         >
-                            {copied ? <Check size={14} /> : <Copy size={14} />}
+                            {copied ? <Check size={12} /> : <Copy size={12} />}
                             {copied ? 'COPIED' : 'COPY'}
                         </button>
                     )}
                 </div>
 
-                <div className="flex-1 p-6 overflow-y-auto markdown-content">
+                {/* Content */}
+                <div className="flex-1 p-6 overflow-y-auto markdown-content bg-[#050505]">
                     {state.result ? (
                         <ReactMarkdown remarkPlugins={[remarkGfm]}>
                             {state.result}
                         </ReactMarkdown>
                     ) : (
-                        <div className="h-full flex flex-col items-center justify-center text-[var(--muted)] opacity-50 space-y-4">
-                            <Shield size={48} strokeWidth={1} />
-                            <p>Select an audience and generate to see the explanation here.</p>
+                        <div className="h-full flex flex-col items-center justify-center text-[var(--muted)] space-y-6">
+                            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500/10 to-purple-500/10 flex items-center justify-center border border-white/[0.04]">
+                                <Shield size={36} strokeWidth={1.5} className="text-gray-600" />
+                            </div>
+                            <div className="text-center">
+                                <p className="font-medium text-gray-500 mb-1">No explanation generated yet</p>
+                                <p className="text-sm text-gray-600">Select an audience and generate to see the explanation here.</p>
+                            </div>
                         </div>
                     )}
                 </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Calculator, X } from 'lucide-react';
+import { Calculator, X, Info } from 'lucide-react';
 import clsx from 'clsx';
 
 // CVSS 3.1 Metric Values
@@ -135,74 +135,93 @@ export default function CVSSCalculator({ isOpen, onClose, onApply, initialScore 
 
     const { score, severity, vector } = calculateCVSS(values);
 
-    const severityColors: Record<string, string> = {
-        'None': 'bg-gray-500',
-        'Low': 'bg-green-500',
-        'Medium': 'bg-yellow-500',
-        'High': 'bg-orange-500',
-        'Critical': 'bg-red-500'
+    const severityConfig: Record<string, { bg: string; text: string; glow: string; gradient: string }> = {
+        'None': { bg: 'bg-gray-500', text: 'text-gray-400', glow: '', gradient: 'from-gray-600 to-gray-700' },
+        'Low': { bg: 'bg-green-500', text: 'text-green-400', glow: 'shadow-green-500/30', gradient: 'from-green-500 to-green-600' },
+        'Medium': { bg: 'bg-yellow-500', text: 'text-yellow-400', glow: 'shadow-yellow-500/30', gradient: 'from-yellow-500 to-orange-500' },
+        'High': { bg: 'bg-orange-500', text: 'text-orange-400', glow: 'shadow-orange-500/30', gradient: 'from-orange-500 to-red-500' },
+        'Critical': { bg: 'bg-red-500', text: 'text-red-400', glow: 'shadow-red-500/30', gradient: 'from-red-500 to-rose-600' }
     };
+
+    const config = severityConfig[severity];
 
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-            <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md">
+            <div
+                className="glass-card border border-white/[0.08] rounded-3xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto animate-in"
+                style={{ animation: 'fadeIn 0.3s ease-out' }}
+            >
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-[#1a1a1a]">
+                <div className="flex items-center justify-between p-6 border-b border-white/[0.06]">
                     <div className="flex items-center gap-3">
-                        <Calculator className="text-blue-400" size={24} />
-                        <h2 className="text-xl font-bold">CVSS 3.1 Calculator</h2>
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+                            <Calculator className="text-blue-400" size={20} />
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-bold">CVSS 3.1 Calculator</h2>
+                            <p className="text-xs text-[var(--muted)]">Common Vulnerability Scoring System</p>
+                        </div>
                     </div>
-                    <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
+                    <button
+                        onClick={onClose}
+                        className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/[0.06] text-gray-500 hover:text-white transition-all duration-200"
+                    >
                         <X size={20} />
                     </button>
                 </div>
 
                 {/* Score Display */}
-                <div className="p-6 border-b border-[#1a1a1a] flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <div className={clsx("w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold text-white", severityColors[severity])}>
-                            {score.toFixed(1)}
+                <div className="p-6 border-b border-white/[0.06] bg-gradient-to-r from-white/[0.02] to-transparent">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-5">
+                            {/* Score Circle */}
+                            <div className={clsx(
+                                "w-24 h-24 rounded-2xl flex items-center justify-center text-3xl font-bold text-white shadow-2xl",
+                                `bg-gradient-to-br ${config.gradient}`,
+                                config.glow && `shadow-lg ${config.glow}`
+                            )}>
+                                {score.toFixed(1)}
+                            </div>
+                            <div>
+                                <div className={clsx("text-xl font-bold", config.text)}>{severity}</div>
+                                <div className="text-xs text-gray-500 font-mono mt-2 bg-black/30 px-3 py-1.5 rounded-lg border border-white/[0.04] max-w-[280px] truncate">
+                                    {vector}
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <div className={clsx("text-lg font-bold", {
-                                'text-gray-400': severity === 'None',
-                                'text-green-400': severity === 'Low',
-                                'text-yellow-400': severity === 'Medium',
-                                'text-orange-400': severity === 'High',
-                                'text-red-400': severity === 'Critical'
-                            })}>{severity}</div>
-                            <div className="text-xs text-gray-500 font-mono mt-1">{vector}</div>
-                        </div>
+                        <button
+                            onClick={() => onApply(score, severity, vector)}
+                            className="btn btn-primary px-6"
+                        >
+                            Apply Score
+                        </button>
                     </div>
-                    <button
-                        onClick={() => onApply(score, severity, vector)}
-                        className="btn btn-primary"
-                    >
-                        Apply Score
-                    </button>
                 </div>
 
                 {/* Metrics */}
-                <div className="p-6 space-y-6">
+                <div className="p-6 space-y-8">
                     {/* Exploitability Metrics */}
                     <div>
-                        <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">Exploitability Metrics</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-blue-500" />
+                            Exploitability Metrics
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                             {(['AV', 'AC', 'PR', 'UI'] as const).map(key => (
-                                <div key={key} className="space-y-2">
-                                    <label className="text-sm text-gray-300">{METRICS[key].name}</label>
-                                    <div className="flex gap-1">
+                                <div key={key} className="space-y-2.5">
+                                    <label className="text-sm text-gray-300 font-medium">{METRICS[key].name}</label>
+                                    <div className="flex gap-1.5">
                                         {METRICS[key].options.map(opt => (
                                             <button
                                                 key={opt.value}
                                                 onClick={() => setValues(v => ({ ...v, [key]: opt.value }))}
                                                 className={clsx(
-                                                    "flex-1 py-2 px-3 text-xs font-medium rounded-lg transition-all",
+                                                    "flex-1 py-2.5 px-3 text-xs font-semibold rounded-xl transition-all duration-300",
                                                     values[key] === opt.value
-                                                        ? "bg-blue-500 text-white"
-                                                        : "bg-[#1a1a1a] text-gray-400 hover:bg-[#252525]"
+                                                        ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25"
+                                                        : "bg-white/[0.04] text-gray-400 hover:bg-white/[0.08] hover:text-white border border-white/[0.04]"
                                                 )}
                                             >
                                                 {opt.label}
@@ -216,7 +235,10 @@ export default function CVSSCalculator({ isOpen, onClose, onApply, initialScore 
 
                     {/* Scope */}
                     <div>
-                        <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">Scope</h3>
+                        <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-purple-500" />
+                            Scope
+                        </h3>
                         <div className="space-y-2">
                             <div className="flex gap-2">
                                 {METRICS.S.options.map(opt => (
@@ -224,10 +246,10 @@ export default function CVSSCalculator({ isOpen, onClose, onApply, initialScore 
                                         key={opt.value}
                                         onClick={() => setValues(v => ({ ...v, S: opt.value }))}
                                         className={clsx(
-                                            "flex-1 py-3 px-4 text-sm font-medium rounded-lg transition-all",
+                                            "flex-1 py-3.5 px-4 text-sm font-semibold rounded-xl transition-all duration-300",
                                             values.S === opt.value
-                                                ? "bg-purple-500 text-white"
-                                                : "bg-[#1a1a1a] text-gray-400 hover:bg-[#252525]"
+                                                ? "bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25"
+                                                : "bg-white/[0.04] text-gray-400 hover:bg-white/[0.08] hover:text-white border border-white/[0.04]"
                                         )}
                                     >
                                         {opt.label}
@@ -239,21 +261,24 @@ export default function CVSSCalculator({ isOpen, onClose, onApply, initialScore 
 
                     {/* Impact Metrics */}
                     <div>
-                        <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">Impact Metrics</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-orange-500" />
+                            Impact Metrics
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                             {(['C', 'I', 'A'] as const).map(key => (
-                                <div key={key} className="space-y-2">
-                                    <label className="text-sm text-gray-300">{METRICS[key].name}</label>
-                                    <div className="flex gap-1">
+                                <div key={key} className="space-y-2.5">
+                                    <label className="text-sm text-gray-300 font-medium">{METRICS[key].name}</label>
+                                    <div className="flex gap-1.5">
                                         {METRICS[key].options.map(opt => (
                                             <button
                                                 key={opt.value}
                                                 onClick={() => setValues(v => ({ ...v, [key]: opt.value }))}
                                                 className={clsx(
-                                                    "flex-1 py-2 px-2 text-xs font-medium rounded-lg transition-all",
+                                                    "flex-1 py-2.5 px-2 text-xs font-semibold rounded-xl transition-all duration-300",
                                                     values[key] === opt.value
-                                                        ? "bg-orange-500 text-white"
-                                                        : "bg-[#1a1a1a] text-gray-400 hover:bg-[#252525]"
+                                                        ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/25"
+                                                        : "bg-white/[0.04] text-gray-400 hover:bg-white/[0.08] hover:text-white border border-white/[0.04]"
                                                 )}
                                             >
                                                 {opt.label}

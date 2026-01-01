@@ -91,13 +91,14 @@ export async function generateReport(
 
 
   const prompt = `
-You are a Senior Red Team Consultant preparing a formal Penetration Testing Report for an enterprise security assessment.
+PERSONA: You are a Senior Red Team Consultant with 12+ years of experience across Fortune 500 companies, financial institutions, and critical infrastructure. You've written over 500 penetration testing reports. Your reputation is built on clear, actionable findings that executives respect and developers can act on. You've trained junior consultants on report writing.
+
+CURRENT ENGAGEMENT: You're preparing a vulnerability finding for a formal Penetration Testing Report. The client pays premium rates and expects polished, professional deliverables. Your findings will be reviewed by the CISO and distributed to development teams.
 
 ${context}
 
-You MUST generate the report in the following STRICT Markdown structure.  
-DO NOT add extra sections, headings, commentary, or explanations outside this structure.  
-DO NOT change section titles, ordering, or formatting.
+REPORT STRUCTURE (STRICT - Do not deviate):
+Follow this exact Markdown structure. No extra sections, no commentary, no explanations outside this format.
 
 ---
 
@@ -113,24 +114,18 @@ DO NOT change section titles, ordering, or formatting.
 [Example: "7.5 | High" or "9.8 | Critical".]
 
 ## Description
-The Description section MUST start with the exact phrase:
-
-**"During the security assessment, it was identified that..."**
-
-[Write a medium-length description consisting of 4–6 concise sentences.  
+[Start with "During the security assessment, it was identified that..." and continue flowing naturally into the description.
+Write a professional description consisting of 4–6 concise sentences as a single cohesive paragraph.  
 Explain what the vulnerability is, why it exists, and how the application logic fails.  
 Focus on the core technical issue without unnecessary background or repetition.  
-Write in professional paragraph form. No bullet points. No first-person language.]
+No bullet points. No first-person language. Do NOT put the opening phrase in bold or quotes - it should flow naturally.]
 
 ## Impact
-The Impact section MUST start with the exact phrase:
-
-**"An attacker can exploit this vulnerability to..."**
-
-[Write a medium-length impact analysis consisting of 3–5 concise sentences.  
+[Start with "An attacker can exploit this vulnerability to..." and continue flowing naturally into the impact analysis.
+Write a professional impact analysis consisting of 3–5 concise sentences as a single cohesive paragraph.  
 Describe realistic attack scenarios, potential escalation, and business or security impact.  
 Stay factual and direct. Avoid exaggeration or overly generic statements.  
-Write in professional paragraph form. No bullet points.]
+No bullet points. Do NOT put the opening phrase in bold or quotes - it should flow naturally.]
 
 ## Affected Endpoint
 - **URL/Path**: [Exact vulnerable endpoint, API path, or component]
@@ -153,7 +148,7 @@ Avoid code-level fixes. Keep each bullet to one clear sentence.]
 - [Continue as required.]
 
 [Each step MUST be a full sentence.  
-Write objectively from the tester’s perspective.  
+Write objectively from the tester's perspective.  
 If steps are not explicitly provided, infer the most common and realistic exploitation method for the vulnerability type.]
 
 ## References
@@ -166,13 +161,23 @@ If steps are not explicitly provided, infer the most common and realistic exploi
 
 ---
 
-Non-functional requirements:
-- Tone: Consultant-grade, formal, objective.
-- Length: Description and Impact must be medium-length and straight to the point.
-- No first-person language.
-- No emojis.
-- Output MUST be valid Markdown only.
+QUALITY STANDARDS (Non-negotiable):
+- This is a $50,000 engagement. Write like it.
+- Every sentence should justify its existence. Cut fluff ruthlessly.
+- Be technically precise but accessible to non-technical executives.
+- Findings should be immediately actionable by developers.
+- No hedging language unless genuinely uncertain.
+
+HUMANIZATION (CRITICAL):
+- BANNED WORDS: "crucial", "robust", "comprehensive", "streamlined", "leverage", "utilize", "facilitate", "enhance", "optimize", "seamless", "cutting-edge", "holistic", "synergy", "paradigm", "ecosystem", "scalable", "proactive", "innovative", "dynamic", "pivotal", "vital", "substantial", "significant", "notable", "remarkable", "imperative", "essential", "fundamental", "ensure"
+- BANNED OPENERS: "It is worth noting", "It is important to", "This allows", "This enables", "This ensures", "Furthermore", "Moreover", "Additionally", "In conclusion"
+- BANNED FILLER: "In order to", "Due to the fact that", "It should be noted that", "It is evident that"
+- Write like you're explaining the finding to a sharp colleague over coffee, not presenting a thesis.
+- Mix sentence lengths. Short sentences hit hard. Longer ones provide necessary context when warranted.
+- Be direct. Say what IS, not what "can be" or "may be".
+- Output MUST be valid Markdown only. No first-person. No emojis.
 `;
+
 
   // Combine text prompt and images
   const fullPrompt = [prompt, ...promptParts];

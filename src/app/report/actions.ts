@@ -4,7 +4,7 @@ import { generateReport } from '@/lib/ai';
 import { sanitizeInput } from '@/lib/sanitizer';
 import { db } from '@/lib/db';
 
-export async function submitReport(prevState: any, formData: FormData): Promise<{ result?: string; error?: string }> {
+export async function submitReport(prevState: any, formData: FormData): Promise<{ result?: string; error?: string; metadata?: any }> {
     const mode = formData.get('mode') as "poc" | "def";
     const pocContent = formData.get('pocContent') as string;
     const vulName = formData.get('vulName') as string;

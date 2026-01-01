@@ -3,7 +3,7 @@
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
-import { Bold, Italic, Heading1, Heading2, List, ListOrdered, Code, Link as LinkIcon, Undo, Redo } from 'lucide-react';
+import { Bold, Italic, Heading1, Heading2, List, ListOrdered, Code, Link as LinkIcon, Undo, Redo, Type } from 'lucide-react';
 import clsx from 'clsx';
 import { useEffect } from 'react';
 
@@ -144,82 +144,98 @@ export default function WysiwygEditor({ content, onChange, editable = true }: Wy
             onClick={onClick}
             title={title}
             className={clsx(
-                "p-2 rounded hover:bg-[#333] transition-colors",
-                active ? "bg-[#333] text-white" : "text-[var(--muted)]"
+                "w-9 h-9 flex items-center justify-center rounded-lg transition-all duration-200",
+                active
+                    ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25"
+                    : "text-gray-500 hover:text-white hover:bg-white/[0.08]"
             )}
         >
             {children}
         </button>
     );
 
+    const ToolbarDivider = () => (
+        <div className="w-px h-6 bg-white/[0.08] mx-1" />
+    );
+
     return (
         <div className="flex flex-col h-full">
             {/* Toolbar - Only show when editable */}
             {editable && (
-                <div className="flex items-center gap-1 p-2 border-b border-[var(--card-border)] bg-[#0a0a0a] flex-shrink-0">
+                <div className="flex items-center gap-1 px-4 py-3 border-b border-white/[0.06] bg-white/[0.02] flex-shrink-0">
+                    {/* Text Formatting */}
                     <ToolbarButton
                         onClick={() => editor.chain().focus().toggleBold().run()}
                         active={editor.isActive('bold')}
                         title="Bold"
                     >
-                        <Bold size={16} />
+                        <Bold size={15} />
                     </ToolbarButton>
                     <ToolbarButton
                         onClick={() => editor.chain().focus().toggleItalic().run()}
                         active={editor.isActive('italic')}
                         title="Italic"
                     >
-                        <Italic size={16} />
+                        <Italic size={15} />
                     </ToolbarButton>
-                    <div className="w-px h-6 bg-[var(--card-border)] mx-1" />
+
+                    <ToolbarDivider />
+
+                    {/* Headings */}
                     <ToolbarButton
                         onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
                         active={editor.isActive('heading', { level: 1 })}
                         title="Heading 1"
                     >
-                        <Heading1 size={16} />
+                        <Heading1 size={15} />
                     </ToolbarButton>
                     <ToolbarButton
                         onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
                         active={editor.isActive('heading', { level: 2 })}
                         title="Heading 2"
                     >
-                        <Heading2 size={16} />
+                        <Heading2 size={15} />
                     </ToolbarButton>
-                    <div className="w-px h-6 bg-[var(--card-border)] mx-1" />
+
+                    <ToolbarDivider />
+
+                    {/* Lists */}
                     <ToolbarButton
                         onClick={() => editor.chain().focus().toggleBulletList().run()}
                         active={editor.isActive('bulletList')}
                         title="Bullet List"
                     >
-                        <List size={16} />
+                        <List size={15} />
                     </ToolbarButton>
                     <ToolbarButton
                         onClick={() => editor.chain().focus().toggleOrderedList().run()}
                         active={editor.isActive('orderedList')}
                         title="Numbered List"
                     >
-                        <ListOrdered size={16} />
+                        <ListOrdered size={15} />
                     </ToolbarButton>
                     <ToolbarButton
                         onClick={() => editor.chain().focus().toggleCodeBlock().run()}
                         active={editor.isActive('codeBlock')}
                         title="Code Block"
                     >
-                        <Code size={16} />
+                        <Code size={15} />
                     </ToolbarButton>
-                    <div className="w-px h-6 bg-[var(--card-border)] mx-1" />
+
+                    <ToolbarDivider />
+
+                    {/* Undo/Redo */}
                     <ToolbarButton
                         onClick={() => editor.chain().focus().undo().run()}
                         title="Undo"
                     >
-                        <Undo size={16} />
+                        <Undo size={15} />
                     </ToolbarButton>
                     <ToolbarButton
                         onClick={() => editor.chain().focus().redo().run()}
                         title="Redo"
                     >
-                        <Redo size={16} />
+                        <Redo size={15} />
                     </ToolbarButton>
                 </div>
             )}

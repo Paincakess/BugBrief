@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
-import Link from 'next/link';
 import './globals.css';
 import clsx from 'clsx';
+import { Navigation } from './Navigation';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono' });
@@ -21,25 +21,42 @@ export default function RootLayout({
     <html lang="en">
       <body className={clsx(inter.variable, jetbrainsMono.variable, "antialiased")}>
         <div className="min-h-screen bg-[var(--background)] flex flex-col">
-          <header className="sticky top-0 z-50 border-b border-[#1a1a1a] bg-[#030303]/90 backdrop-blur-xl mb-8 py-6 min-h-20">
+          {/* Enhanced Header */}
+          <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-[#030303]/80 backdrop-blur-2xl mb-8 py-5">
             <div className="container flex items-center justify-between">
-              <h1 className="text-3xl font-extrabold tracking-tight flex items-center gap-1">
-                <span className="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">Bug</span>
-                <span className="text-white">Brief</span>
-              </h1>
-              <nav className="flex items-center gap-1">
-                <Link href="/" className="px-4 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-all">Home</Link>
-                <Link href="/explainer" className="px-4 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-all">Explainer</Link>
-                <Link href="/report" className="px-4 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-all">Report Gen</Link>
-                <Link href="/history" className="px-4 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-all">History</Link>
-              </nav>
+              {/* Logo with glow effect */}
+              <a href="/" className="group flex items-center gap-1">
+                <h1 className="text-3xl font-extrabold tracking-tight flex items-center gap-0.5 transition-all duration-300 group-hover:scale-[1.02]">
+                  <span className="bg-gradient-to-r from-blue-400 via-blue-500 to-purple-500 bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(59,130,246,0.3)]">Bug</span>
+                  <span className="text-white">Brief</span>
+                </h1>
+              </a>
+
+              {/* Navigation with active state */}
+              <Navigation />
             </div>
           </header>
+
           <main className="flex-1 container pb-8">
             {children}
           </main>
-          <footer className="border-t border-[var(--card-border)] p-6 text-center text-xs text-[var(--muted)]">
-            Local-First • Offline-Ready • Gemini Powered
+
+          {/* Enhanced Footer */}
+          <footer className="relative border-t border-white/[0.04] p-6 text-center">
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
+            <div className="flex items-center justify-center gap-3 text-xs text-[var(--muted)]">
+              <span className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                Local-First
+              </span>
+              <span className="text-white/10">•</span>
+              <span>Offline-Ready</span>
+              <span className="text-white/10">•</span>
+              <span className="flex items-center gap-1.5">
+                <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent font-medium">Gemini</span>
+                Powered
+              </span>
+            </div>
           </footer>
         </div>
       </body>
