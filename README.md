@@ -137,6 +137,51 @@ src/
 - No telemetry or external data collection
 - API keys are only used for AI generation
 
+## 🐳 Self-Hosting & Security
+
+You can host this application on any server (VPS, Home Lab, Windows) using Docker.
+
+### Option 1: Docker (Recommended)
+
+1.  **Build the container**
+    ```bash
+    docker build -t bugbrief .
+    ```
+
+2.  **Run the container**
+    ```bash
+    docker run -p 3000:3000 \
+      -e GEMINI_API_KEY="your_key" \
+      -e DATABASE_URL="file:/app/dev.db" \
+      -v $(pwd)/dev.db:/app/dev.db \
+      bugbrief
+    ```
+
+### Option 2: Secure Public Access
+
+If you are hosting this on a public server (not just localhost), you **MUST** enable authentication to prevent unauthorized access and API usage.
+
+1.  **Enable Authentication**
+    Set `ENABLE_AUTH=true` in your environment variables.
+
+2.  **Set Credentials**
+    Configure `AUTH_USER` and `AUTH_PASSWORD`.
+
+**Docker Example with Auth:**
+```bash
+docker run -p 3000:3000 \
+  -e GEMINI_API_KEY="your_key" \
+  -e DATABASE_URL="file:/app/dev.db" \
+  -e ENABLE_AUTH="true" \
+  -e AUTH_USER="admin" \
+  -e AUTH_PASSWORD="secure_password" \
+  -v $(pwd)/dev.db:/app/dev.db \
+  bugbrief
+```
+
+> [!NOTE]
+> Authentication is **DISABLED** by default to make it easy to demo or run locally. Enable it if your server is accessible from the internet!
+
 ## 📄 License
 
 MIT License - feel free to use and modify for your security workflows.
